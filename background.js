@@ -1,4 +1,7 @@
-console.log("background script init");
+function getAppId(){
+    let appId = ''
+    
+}
 function nslookup(url, type) {
     const domain = new URL(url)
     chrome.storage.sync.set({ 'domain': domain.hostname});
@@ -16,19 +19,22 @@ function nslookup(url, type) {
             }
         });
 }
-
 function handleUpdated(tabid, changeInfo, tab) {
     if (changeInfo.url) {
-        nslookup(changeInfo.url, 'TXT')
+        let url = changeInfo.url
+        changeInfo.url.indexOf('www.')>-1?url=url.replace('www.',""):url=url
+        nslookup(url, 'TXT')
     }
 }
 
 function handleActivated(activeInfo) {
     chrome.tabs.get(activeInfo.tabId, tab => {
-        nslookup(tab.url, 'TXT')
+        let url = tab.url
+        tab.url.indexOf('www.')>-1?url=url.replace('www.',""):url=url
+        nslookup(url, 'TXT')
     })
 }
 
 
 chrome.tabs.onActivated.addListener(handleActivated);
-chrome.tabs.onUpdated.addListener(handleUpdated)
+chrome.tabs.onUpdated.addListener(handleUpdated);

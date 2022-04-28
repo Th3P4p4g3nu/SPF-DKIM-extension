@@ -10,8 +10,17 @@
         "storage",
         "activeTab",
         "tabs",
-        "scripting"
+        "scripting",
+        "webNavigation"
     ],
+    "content_scripts": [
+        {
+          "matches": ["<all_urls>"],
+          "exclude_matches": ["https://*.google.com/*"],
+          "run_at": "document_end",
+          "js": ["content.js"]
+        }
+      ],
     "action": {
         "default_popup": "popup.html",
         "default_icon": {
