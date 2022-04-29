@@ -13,6 +13,15 @@
         "scripting",
         "webNavigation"
     ],
+    "action": {
+        "default_popup": "",
+        "default_icon": {
+            "16": "/images/disabled.png",
+            "32": "/images/disabled.png",
+            "48": "/images/disabled.png",
+            "128": "/images/disabled.png"
+        }
+    },
     "content_scripts": [
         {
           "matches": ["<all_urls>"],
@@ -21,15 +30,6 @@
           "js": ["content.js"]
         }
       ],
-    "action": {
-        "default_popup": "popup.html",
-        "default_icon": {
-            "16": "/images/Favicon-edrone-192x192.png",
-            "32": "/images/Favicon-edrone-192x192.png",
-            "48": "/images/Favicon-edrone-192x192.png",
-            "128": "/images/Favicon-edrone-192x192.png"
-        }
-    },
     "icons": {
         "16": "/images/Favicon-edrone-192x192.png",
         "32": "/images/Favicon-edrone-192x192.png",
