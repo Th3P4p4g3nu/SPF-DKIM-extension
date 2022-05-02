@@ -2,15 +2,19 @@
 function nslookup(url, type) {
   const domain = new URL(url);
   chrome.storage.sync.set({ domain: domain.hostname }); //Setting hostname in extension storage
-  fetch(`https://dns.google.com/resolve?name=${domain.hostname}&type=${type}`)
+  fetch(`https://dns.google.com/resolve?name=${type==='TXT'?domain.hostname:`edrone._domainkey.${domain.hostname}`}&type=${type}`)
     .then((response) => response.json())
     .then((data) => {
       if (data.Answer) {
         const res = data.Answer;
         res.forEach((element) => {
-          if ((type = "TXT" && element.data.indexOf("v=spf1") > -1)) {
-            console.log(element);
+          if ((type == "TXT" && element.data.indexOf("v=spf1") > -1)) {
             chrome.storage.sync.set({ spf: element.data }); //Setting value for SPF in extension storage
+          }
+          if(type == "CNAME" && element.data.indexOf("_domainkey") > -1){
+            chrome.storage.sync.set({ dkim: element.data });
+          }else{
+            chrome.storage.sync.set({ dkim: 'Not found' });
           }
         });
       }
@@ -36,6 +40,7 @@ function handleUpdated(tabid, changeInfo, tab) {
       ? (url = url.replace("www.", ""))
       : (url = url);
     nslookup(url, "TXT");
+    nslookup(url, "CNAME");
   }
 }
 //This functions is executing when user change active tab
@@ -47,8 +52,9 @@ function handleActivated(activeInfo) {
         ? (url = url.replace("www.", ""))
         : (url = url);
       nslookup(url, "TXT");
+      nslookup(url, "CNAME");
     }
-  });
+  });  
 }
 //Since we can't inject the content.js everytime user change the tab, we have to store the info about already loaded domains with edrone 
 chrome.storage.sync.set({ hostsHistory: [] });//Set the array in storage
