@@ -65,6 +65,9 @@ h2{
     border-radius: 5px;
     line-height: 20px;
 }
+#dkimTwo{
+    margin-top: 10px;
+}
 #content_container-footer{
     height: 35px;
     width: 100%;

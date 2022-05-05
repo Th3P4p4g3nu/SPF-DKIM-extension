@@ -1,20 +1,40 @@
 //Get DNS record from URL address
-function nslookup(url, type) {
+function nslookup(url, type, sender) {
   const domain = new URL(url);
   chrome.storage.sync.set({ domain: domain.hostname }); //Setting hostname in extension storage
-  fetch(`https://dns.google.com/resolve?name=${type==='TXT'?domain.hostname:`edrone._domainkey.${domain.hostname}`}&type=${type}`)
+  fetch(
+    `https://dns.google.com/resolve?name=${
+      type === "TXT"
+        ? domain.hostname
+        : `${sender}._domainkey.${domain.hostname}`
+    }&type=${type}`
+  )
     .then((response) => response.json())
     .then((data) => {
       if (data.Answer) {
         const res = data.Answer;
         res.forEach((element) => {
-          if ((type == "TXT" && element.data.indexOf("v=spf1") > -1)) {
+          console.log(element.data);
+          if (type == "TXT" && element.data.indexOf("v=spf1") > -1) {
             chrome.storage.sync.set({ spf: element.data }); //Setting value for SPF in extension storage
           }
-          if(type == "CNAME" && element.data.indexOf("_domainkey") > -1){
-            chrome.storage.sync.set({ dkim: element.data });
-          }else{
-            chrome.storage.sync.set({ dkim: 'Not found' });
+          //Check edrone DKIM
+          if (
+            type == "CNAME" &&
+            element.data.indexOf("edrone") > -1
+          ) {
+            chrome.storage.sync.set({ edroneDKIM: element.data });
+          } else {
+            chrome.storage.sync.set({ edroneDKIM: "Not found" });
+          }
+          //Check emaillabs DKIM
+          if (
+            type == "CNAME" &&
+            element.data.indexOf("emaillabs") > -1
+          ) {
+            chrome.storage.sync.set({ emaillabsDKIM: element.data });
+          } else {
+            chrome.storage.sync.set({ emaillabsDKIM: "Not found" });
           }
         });
       }
@@ -40,7 +60,10 @@ function handleUpdated(tabid, changeInfo, tab) {
       ? (url = url.replace("www.", ""))
       : (url = url);
     nslookup(url, "TXT");
-    nslookup(url, "CNAME");
+    console.log('Get edrone DKIM')
+    nslookup(url, "CNAME", "edrone");
+    console.log('Get emaillabs DKIM')
+    nslookup(url, "CNAME", "emaillabs");
   }
 }
 //This functions is executing when user change active tab
@@ -52,19 +75,23 @@ function handleActivated(activeInfo) {
         ? (url = url.replace("www.", ""))
         : (url = url);
       nslookup(url, "TXT");
-      nslookup(url, "CNAME");
+      console.log('Get edrone DKIM')
+      nslookup(url, "CNAME", "edrone");
+      console.log('Get emaillabs DKIM')
+      nslookup(url, "CNAME", "emaillabs");
     }
-  });  
+  });
 }
-//Since we can't inject the content.js everytime user change the tab, we have to store the info about already loaded domains with edrone 
-chrome.storage.sync.set({ hostsHistory: [] });//Set the array in storage
+//Since we can't inject the content.js everytime user change the tab, we have to store the info about already loaded domains with edrone
+chrome.storage.sync.set({ hostsHistory: [] }); //Set the array in storage
 //Message handler
 chrome.runtime.onConnect.addListener(function (port) {
   port.onMessage.addListener(function (data) {
     if (data.content === "init") {
-      port.postMessage({ req: "getAppId" });//Get app_id request
+      port.postMessage({ req: "getAppId" }); //Get app_id request
     }
-    if (data.app_id) { //if app_id exist
+    if (data.app_id) {
+      //if app_id exist
       isPopup(true); // enable popup
       //Add current domain to the array
       chrome.storage.sync.get("hostsHistory", (response) => {
@@ -73,7 +100,7 @@ chrome.runtime.onConnect.addListener(function (port) {
         });
       });
     } else {
-      isPopup(false);//Turn off popup
+      isPopup(false); //Turn off popup
     }
   });
 });
@@ -91,5 +118,5 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
     });
   });
 });
-//on update current tab 
+//on update current tab
 chrome.tabs.onUpdated.addListener(handleUpdated);
