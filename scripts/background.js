@@ -3,40 +3,35 @@ function nslookup(url, type, sender) {
   const domain = new URL(url);
   chrome.storage.sync.set({ domain: domain.hostname }); //Setting hostname in extension storage
   fetch(
-    `https://dns.google.com/resolve?name=${
-      type === "TXT"
-        ? domain.hostname
-        : `${sender}._domainkey.${domain.hostname}`
+    `https://dns.google.com/resolve?name=${type === "TXT"
+      ? domain.hostname
+      : `${sender}._domainkey.${domain.hostname}`
     }&type=${type}`
   )
     .then((response) => response.json())
     .then((data) => {
       if (data.Answer) {
         const res = data.Answer;
-        res.forEach((element) => {
-          console.log(element.data);
-          if (type == "TXT" && element.data.indexOf("v=spf1") > -1) {
-            chrome.storage.sync.set({ spf: element.data }); //Setting value for SPF in extension storage
-          }
+        if (type == 'TXT') {
+          res.forEach((element) => {
+            if (type == "TXT" && element.data.indexOf("v=spf1") > -1) {
+              chrome.storage.sync.set({ spf: element.data }); //Setting value for SPF in extension storage
+            }
+          });
+        } else {
           //Check edrone DKIM
           if (
-            type == "CNAME" &&
-            element.data.indexOf("edrone") > -1
+            sender === 'edrone'
           ) {
-            chrome.storage.sync.set({ edroneDKIM: element.data });
-          } else {
-            chrome.storage.sync.set({ edroneDKIM: "Not found" });
+            chrome.storage.sync.set({ edroneDKIM: res[0].data });
           }
           //Check emaillabs DKIM
           if (
-            type == "CNAME" &&
-            element.data.indexOf("emaillabs") > -1
+            sender === 'emaillabs'
           ) {
-            chrome.storage.sync.set({ emaillabsDKIM: element.data });
-          } else {
-            chrome.storage.sync.set({ emaillabsDKIM: "Not found" });
+            chrome.storage.sync.set({ emaillabsDKIM: res[0].data });
           }
-        });
+        }
       }
     });
 }
@@ -60,9 +55,7 @@ function handleUpdated(tabid, changeInfo, tab) {
       ? (url = url.replace("www.", ""))
       : (url = url);
     nslookup(url, "TXT");
-    console.log('Get edrone DKIM')
     nslookup(url, "CNAME", "edrone");
-    console.log('Get emaillabs DKIM')
     nslookup(url, "CNAME", "emaillabs");
   }
 }
@@ -75,9 +68,7 @@ function handleActivated(activeInfo) {
         ? (url = url.replace("www.", ""))
         : (url = url);
       nslookup(url, "TXT");
-      console.log('Get edrone DKIM')
       nslookup(url, "CNAME", "edrone");
-      console.log('Get emaillabs DKIM')
       nslookup(url, "CNAME", "emaillabs");
     }
   });

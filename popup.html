@@ -1,35 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="css/popup.css" />
-  </head>
 
-  <body>
-    <div id="content_container">
-      <div id="content_container-nav">
-        <h1>EDRONE SUPPORT MULTITOOL</h1>
-      </div>
-      <div id="content_container-data">
-        <div id="domainName"></div>
-        <div id="data">
-          <div id="data-spf">
-            <h2>SPF</h2>
-            <div id="spf" class="result"></div>
-          </div>
-          <div id="data-dkim">
-            <h2>DKIM</h2>
-            <div id="dkimOne" class="result"></div>
-            <div id="dkimTwo" class="result"></div>
-          </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/popup.css" />
+  <script src="https://kit.fontawesome.com/a3f82f4679.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <div id="content_container">
+    <div id="content_container-nav">
+      <h1>EDRONE SUPPORT MULTITOOL</h1>
+    </div>
+    <div id="content_container-data">
+      <div id="domainName"></div>
+      <div id="data">
+        <div id="data-spf">
+          <h2>SPF</h2>
+          <div id="spf" class="result"></div>
+          <ul id="error-log">
+
+          </ul>
+        </div>
+        <div id="data-dkim">
+          <h2>DKIM</h2>
+          <div id="dkimOne" class="result"></div>
+          <div id="dkimTwo" class="result"></div>
         </div>
       </div>
-      <div id="content_container-footer">
-        <h1>SPF&DKIM</h1>
-      </div>
     </div>
-    <script src="scripts/script.js"></script>
-  </body>
+    <div id="content_container-footer">
+      <h1>SPF&DKIM</h1>
+    </div>
+  </div>
+  <script src="scripts/script.js"></script>
+</body>
+
 </html>

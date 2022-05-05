@@ -2,6 +2,7 @@ const resSpf = document.querySelector("#spf");
 const resDkimEdrone = document.querySelector("#dkimOne");
 const resDkimEmaillabs = document.querySelector("#dkimTwo");
 const domainName = document.querySelector("#domainName");
+const errorLog = document.querySelector("#error-log");
 //SPF checker function
 const spfChecker = (record) => {
   let isEdrone = false;
@@ -43,8 +44,10 @@ window.onload = function () {
   });
   chrome.storage.sync.get("spf", (response) => {
     const spf = response.spf.split(" ");
-    console.log(spfChecker(spf));
     resSpf.innerHTML = `${response.spf}`;
+    spfChecker(spf).forEach((element) => {
+      errorLog.insertAdjacentHTML('beforeend',`<li class="error-res">${element}</li>`)
+    });
   });
   chrome.storage.sync.get("edroneDKIM", (response) => {
     resDkimEdrone.innerHTML = `${response.edroneDKIM}`;

@@ -62,7 +62,7 @@ h2{
     border: 1px solid #e1e1e1;
     background-color: #f5f5f5;
     padding: 7px;
-    border-radius: 5px;
+    border-radius: 10px;
     line-height: 20px;
 }
 #dkimTwo{
@@ -75,3 +75,12 @@ h2{
     display: flex;
     align-items: center;
 }
+ul {
+    list-style: none;
+    padding-inline-start:15px;
+  }
+  li:before {
+    content: "✖";
+    padding-right: 5px;
+    color: red;
+  }
