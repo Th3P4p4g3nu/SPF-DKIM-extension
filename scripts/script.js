@@ -3,6 +3,7 @@ const resDkimEdrone = document.querySelector("#dkimOne");
 const resDkimEmaillabs = document.querySelector("#dkimTwo");
 const domainName = document.querySelector("#domainName");
 const errorLog = document.querySelector("#error-log");
+const advCheck = document.querySelector(".advanced");
 //SPF checker function
 const spfChecker = (record) => {
   let isEdrone = false;
@@ -17,12 +18,13 @@ const spfChecker = (record) => {
         results = [...results, 'wrong syntax of SPF record']
     }
   //Validation of edrone record
-  if (record.indexOf("include:_spf.edrone.me") > -1) {
+  if (record.indexOf("include:_spf.edrone.me") > -1 || record.indexOf("include:_spf.emaillabs.net.pl") > -1) {
     isEdrone = true;
     let edroneSPF =
       record.indexOf("include:_spf.edrone.me") > -1
         ? record[record.indexOf("include:_spf.edrone.me")]
         : record[record.indexOf("include:_spf.emaillabs.net.pl")];//Client can use emaillabs record as alt
+    console.log('SPF: '+edroneSPF)
     if (edroneSPF.length != 22) {
       [...results, "wrong syntax of edrone SPF"];
     }
@@ -33,7 +35,7 @@ const spfChecker = (record) => {
       [...results, "breake instead of underscore"];
     }
   } else {
-    results = [...results, "edrone SPF not exist"];
+    results = [...results, "edrone SPF does not exist"];
   }
   return results;
 };
@@ -41,6 +43,7 @@ const spfChecker = (record) => {
 window.onload = function () {
   chrome.storage.sync.get("domain", (response) => {
     domainName.innerHTML = response.domain;
+    advCheck.href = `https://toolbox.googleapps.com/apps/checkmx/check?domain=${response.domain}`
   });
   chrome.storage.sync.get("spf", (response) => {
     const spf = response.spf.split(" ");

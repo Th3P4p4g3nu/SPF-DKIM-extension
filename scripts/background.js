@@ -3,33 +3,38 @@ function nslookup(url, type, sender) {
   const domain = new URL(url);
   chrome.storage.sync.set({ domain: domain.hostname }); //Setting hostname in extension storage
   fetch(
-    `https://dns.google.com/resolve?name=${type === "TXT"
-      ? domain.hostname
-      : `${sender}._domainkey.${domain.hostname}`
+    `https://dns.google.com/resolve?name=${
+      type === "TXT"
+        ? domain.hostname
+        : `${sender}._domainkey.${domain.hostname}`
     }&type=${type}`
   )
     .then((response) => response.json())
     .then((data) => {
       if (data.Answer) {
         const res = data.Answer;
-        if (type == 'TXT') {
+        if (type == "TXT") {
           res.forEach((element) => {
             if (type == "TXT" && element.data.indexOf("v=spf1") > -1) {
               chrome.storage.sync.set({ spf: element.data }); //Setting value for SPF in extension storage
             }
           });
         } else {
-          //Check edrone DKIM
-          if (
-            sender === 'edrone'
-          ) {
-            chrome.storage.sync.set({ edroneDKIM: res[0].data });
-          }
-          //Check emaillabs DKIM
-          if (
-            sender === 'emaillabs'
-          ) {
-            chrome.storage.sync.set({ emaillabsDKIM: res[0].data });
+          switch (sender) {
+            case "edrone": //Check edrone DKIM
+              if (res[0].data.includes(domain.hostname)) {
+                chrome.storage.sync.set({ edroneDKIM: "missing edrone DKIM" });
+              } else {
+                chrome.storage.sync.set({ edroneDKIM: res[0].data });
+              }
+            case "emaillabs": //Check emaillabs DKIM
+              if (res[0].data.includes(domain.hostname)) {
+                chrome.storage.sync.set({
+                  emaillabsDKIM: "missing emaillabs DKIM",
+                });
+              } else {
+                chrome.storage.sync.set({ emaillabsDKIM: res[0].data });
+              }
           }
         }
       }
@@ -51,9 +56,9 @@ function handleUpdated(tabid, changeInfo, tab) {
   if (changeInfo.url) {
     let url = changeInfo.url;
     //Cut WWW
-    changeInfo.url.indexOf("www.") > -1
-      ? (url = url.replace("www.", ""))
-      : (url = url);
+    if (changeInfo.url.indexOf("www.") > -1) {
+      url = url.replace("www.", "");
+    }
     nslookup(url, "TXT");
     nslookup(url, "CNAME", "edrone");
     nslookup(url, "CNAME", "emaillabs");
